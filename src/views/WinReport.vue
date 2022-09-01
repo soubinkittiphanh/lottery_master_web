@@ -13,7 +13,6 @@
           <button class="btn btn-success">ດຶງຂໍ້ມູນ</button> |
           {{ formatdate(r_date) }}
         </div>
-        
       </div>
     </form>
 
@@ -65,21 +64,13 @@
 import axios from "axios";
 import apiDomain from "../config";
 
-// import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from "vue-qrcode-reader";
 export default {
-  // components: {
-  //   QrcodeStream,
-  //   QrcodeDropZone,
-  //   QrcodeCapture,
-  // },
   created() {
     this.setCurDate();
     this.getPayRate();
   },
   data() {
     return {
-      // qr_result: "",
-      // qr_error: "",
       report_data: [],
       r_date: "",
       isloading: false,
@@ -106,28 +97,6 @@ export default {
     },
   },
   methods: {
-    // onDecode(result) {
-    //   this.qr_result = result;
-    // },
-    // async onInit(promise) {
-    //   try {
-    //     await promise;
-    //   } catch (error) {
-    //     if (error.name === "NotAllowedError") {
-    //       this.qr_error = "ERROR: you need to grant camera access permisson";
-    //     } else if (error.name === "NotFoundError") {
-    //       this.qr_error = "ERROR: no camera on this device";
-    //     } else if (error.name === "NotSupportedError") {
-    //       this.qr_error = "ERROR: secure context required (HTTPS, localhost)";
-    //     } else if (error.name === "NotReadableError") {
-    //       this.qr_error = "ERROR: is the camera already in use?";
-    //     } else if (error.name === "OverconstrainedError") {
-    //       this.qr_error = "ERROR: installed cameras are not suitable";
-    //     } else if (error.name === "StreamApiNotSupportedError") {
-    //       this.qr_error = "ERROR: Stream API is not supported in this browser";
-    //     }
-    //   }
-    // },
     getPaid(val) {
       let result = 0;
       if (val.length === 2) {
@@ -140,8 +109,12 @@ export default {
         result = this.payR[0].pay_five;
       } else if (val.length === 6) {
         result = this.payR[0].pay_six;
+      }else if(val==="O"){
+         result = this.payR[0].over;
+      }else if(val==="U"){
+         result = this.payR[0].under;
       }
-    
+
       return result;
     },
     getPayRate() {
@@ -159,21 +132,20 @@ export default {
         });
     },
     getData() {
-      //   const r_date = "10002";
       this.error = null;
       this.isloading = true;
 
       axios
         .get(apiDomain.url + "winreport", {
           params: {
-            p_date: this.r_date,
+            fromIsmDate: this.r_date,
             p_admin: this.isAdmin,
-            p_mem_id: this.mem_id,
+            memId: this.mem_id,
             p_master: this.mem_master,
           },
         })
         .then((res) => {
-          console.log('DATA==============='+res.data); 
+          console.log("DATA===============" + res.data);
           this.report_data = res.data;
           this.isloading = false;
         })

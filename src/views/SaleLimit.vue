@@ -4,9 +4,31 @@
       <div class="col-md-8">
         <form>
           <div class="alert alert-success">
-            ກຳນົດເລກເຕັມຮູ {{ $store.getters.co_code }}
+            ກຳນົດເລກເຕັມຮູ {{ $store.getters.co_code }} 
           </div>
           <div class="form-group row">
+            <label for="roll_id" class="col-md-4 col-form-label"
+              >ປະເພດເລກ:</label
+            >
+            <div class="col-md-12">
+              <select
+                class="custom-select"
+                aria-label="Default select example"
+                :required="true"
+                v-model="category"
+              >
+                <option
+                  v-for="d in categoryList"
+                  v-bind:key="d.catId"
+                  :value="d.category_id"
+                >
+                  {{ d.category_id }} | {{ d.category_name }}
+                </option>
+              </select>
+              <span v-if="!formvalidate.ref" class="error"
+                >ກະລຸນາໃສ່ປະເພດເລກ !!</span
+              >
+            </div>
             <label for="roll_id" class="col-md-4 col-form-label"
               >ເລກ 2 ໂຕ:
               <span style="color: red">[ {{ expres.two }} ]</span></label
@@ -41,6 +63,20 @@
             >
             <div class="col-md-12">
               <input type="number" class="form-control" v-model="six" />
+            </div>
+            <label for="roll_id" class="col-md-4 col-form-label"
+              >ເລກ ສູງ:
+              <span style="color: red">[ {{ expres.over }} ]</span></label
+            >
+            <div class="col-md-12">
+              <input type="number" class="form-control" v-model="over" />
+            </div>
+            <label for="roll_id" class="col-md-4 col-form-label"
+              >ເລກ ຕ່ຳ:
+              <span style="color: red">[ {{ expres.under }} ]</span></label
+            >
+            <div class="col-md-12">
+              <input type="number" class="form-control" v-model="under" />
             </div>
             <label for="roll_id" class="col-md-4 col-form-label"></label>
             <div class="col-md-12">
@@ -125,6 +161,7 @@ import apiDomain from "../config";
 export default {
   data() {
     return {
+      category: "LA001",
       isloading: false,
       error: null,
       two: 0,
@@ -132,15 +169,24 @@ export default {
       four: 0,
       five: 0,
       six: 0,
+      over: 0,
+      under: 0,
+      categoryList: [],
       expres: {
         two: 0,
         three: 0,
         four: 0,
         five: 0,
         six: 0,
+        over: 0,
+        under: 0,
       },
       allBrachNeck: [],
       topsale: [],
+      formvalidate: {
+        ref: false,
+        date: false,
+      },
     };
   },
   watch: {
@@ -159,8 +205,28 @@ export default {
     six(val) {
       this.expres.six = this.formatNum(val);
     },
+    over(val) {
+      this.expres.over = this.formatNum(val);
+    },
+    under(val) {
+      this.expres.under = this.formatNum(val);
+    },
   },
   methods: {
+    async fetchCategory() {
+      let response = await axios.get(apiDomain.url + "category_f");
+      try {
+        let responseData = response.data;
+        for (let index = 0; index < responseData.length; index++) {
+          const element = responseData[index];
+          console.log(element);
+          this.categoryList.push(element);
+        }
+        console.log("Category len: " + response.data.length);
+      } catch (error) {
+        console.log("Error fetching category: " + error);
+      }
+    },
     fetchsalelim() {
       this.isloading = true;
       this.error = null;
@@ -174,6 +240,8 @@ export default {
           this.four = res.data[0].four_digits;
           this.five = res.data[0].five_digits;
           this.six = res.data[0].six_digits;
+          this.over = res.data[0].lim_over;
+          this.under = res.data[0].lim_under;
           this.isloading = false;
         })
         .catch((err) => {
@@ -218,7 +286,12 @@ export default {
             four: this.four,
             five: this.five,
             six: this.six,
-            brc_id: this.$store.getters.co_code=='POPPY'?'DEFAULT':this.$store.getters.co_code,
+            over: this.over,
+            under: this.under,
+            brc_id:
+              this.$store.getters.co_code == "POPPY"
+                ? "DEFAULT"
+                : this.$store.getters.co_code,
           })
           .then((res) => {
             alert(res.data);
@@ -282,6 +355,7 @@ export default {
     this.fetchsalelim();
     this.fetchAllBranch();
     this.fetchTopSale();
+    this.fetchCategory();
   },
 };
 </script>

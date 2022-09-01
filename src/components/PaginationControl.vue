@@ -1,14 +1,40 @@
 <template>
   <div class="">
+    {{ r_date }}
     <div class="center">
       <i class="fa fa-spinner fa-spin fa-3x fa-fw" v-if="isloading"></i>
       <p v-else-if="!isloading && error" style="color: red">{{ error }}</p>
     </div>
+    <form @submit.prevent="triggerSubmit">
+      <div class="form-group row">
+        <label for="roll_id" class="col-md-12 col-form-label"
+          >ສະຫລຸບຍອດຂາຍຈາກວັນທີ:
+        </label>
+        <div class="col-md-12">
+          <input type="date" class="form-control" v-model="r_date" />
+        </div>
+        <label for="roll_id" class="col-md-12 col-form-label"> </label>
+        <div class="col-md-12">
+          <button class="btn btn-success">ດຶງຂໍ້ມູນ</button> |
+          {{ formatdate(r_date) }}
+        </div>
+      </div>
+    </form>
     <div class="alert alert-success">
       ສະມາຊິກທັງຫມົດ:
       {{ total }}
-      <button v-if="mem_master==1" class="btn btn-warning" @click="toggleDetail">ປີດ-ເປີດ ລາຍງານສາຂາ</button>
-      <table v-if="showBrcRe" class="table table-striped table-sm" id="branchreport">
+      <button
+        v-if="mem_master == 1"
+        class="btn btn-warning"
+        @click="toggleDetail"
+      >
+        ປີດ-ເປີດ ລາຍງານສາຂາ
+      </button>
+      <table
+        v-if="showBrcRe"
+        class="table table-striped table-sm"
+        id="branchreport"
+      >
         <thead>
           <tr>
             <th scope="col">ສາຂາ</th>
@@ -19,33 +45,40 @@
           </tr>
         </thead>
         <tbody>
-          <!-- <tr v-for="d in brcreport" v-bind:key="d.brc_code>
-        
-        </tr> -->
           <tr v-for="d in brcreport" v-bind:key="d.brc_code">
             <td>{{ d.brc_code }}</td>
             <td>{{ String(formatNum(d.total)) }}</td>
             <td>{{ String(formatNum(d.total_com1)) }}</td>
             <td>{{ String(formatNum(d.win_amount)) }}</td>
-            <td>{{ String(formatNum(d.total-(d.total_com1+d.win_amount))) }}</td>
+            <td>
+              {{ String(formatNum(d.total - (d.total_com1 + d.win_amount))) }}
+            </td>
           </tr>
           <tr style="color: red">
-          <th scope="col">ລວມ:</th>
-          <th scope="col">
-            [{{ String(formatNum(branchExtract[0]["total"])) }}]
-          </th>
-          <th scope="col">
-            [{{ String(formatNum(branchExtract[0]["total_com1"])) }}]
-          </th>
-          <th scope="col">
-            [{{ String(formatNum(branchExtract[0]["win_amount"])) }}]
-          </th>
-          <th scope="col">
-            [{{ String(formatNum(branchExtract[0]["total"] -(branchExtract[0]["total_com1"]+branchExtract[0]["win_amount"]    )    )) }}]
-          </th>
-          <th scope="col"></th>
-          <th scope="col"></th>
-        </tr>
+            <th scope="col">ລວມ:</th>
+            <th scope="col">
+              [{{ String(formatNum(branchExtract[0]["total"])) }}]
+            </th>
+            <th scope="col">
+              [{{ String(formatNum(branchExtract[0]["total_com1"])) }}]
+            </th>
+            <th scope="col">
+              [{{ String(formatNum(branchExtract[0]["win_amount"])) }}]
+            </th>
+            <th scope="col">
+              [{{
+                String(
+                  formatNum(
+                    branchExtract[0]["total"] -
+                      (branchExtract[0]["total_com1"] +
+                        branchExtract[0]["win_amount"])
+                  )
+                )
+              }}]
+            </th>
+            <th scope="col"></th>
+            <th scope="col"></th>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -57,9 +90,6 @@
           <th scope="col">ສາຂາ</th>
           <th scope="col">ກຸ່ມ</th>
           <th scope="col">ID</th>
-          <!-- <th scope="col">ບ້ານ</th>
-          <th scope="col">ເມືອງ</th>
-          <th scope="col">ແຂວງ</th> -->
           <th scope="col">ຍອດຂາຍ</th>
           <th scope="col">%ຂາຍ</th>
           <th scope="col">ຍອດຖືກ</th>
@@ -82,7 +112,15 @@
           <th scope="col"></th>
           <th scope="col"></th>
           <th scope="col">
-            [{{ String(formatNum(branchExtract[0]["total"] -(branchExtract[0]["total_com1"]+branchExtract[0]["win_amount"]    )    )) }}]
+            [{{
+              String(
+                formatNum(
+                  branchExtract[0]["total"] -
+                    (branchExtract[0]["total_com1"] +
+                      branchExtract[0]["win_amount"])
+                )
+              )
+            }}]
           </th>
           <th scope="col"></th>
           <th scope="col"></th>
@@ -94,9 +132,6 @@
           <td></td>
           <td></td>
           <td></td>
-          <!-- <td></td>
-          <td></td>
-          <td></td> -->
           <td>[{{ String(formatNum(totalsale)) }}]</td>
           <td>[{{ String(formatNum(totalcom3)) }}]</td>
           <td>[{{ String(formatNum(totalwin)) }}]</td>
@@ -158,6 +193,7 @@ export default {
   props: ["datas"],
   data() {
     return {
+      errorclass: "border:1px solid red;",
       showBrcRe: false,
       totalsale: 0,
       totalcom3: 0,
@@ -172,6 +208,12 @@ export default {
       isloading: false,
       error: null,
       brcreport: [],
+      r_date: "",
+      dateVisible: "",
+      formvalidate: {
+        ref: false,
+        date: false,
+      },
       branchExtract: [
         {
           brc_code: "",
@@ -187,9 +229,9 @@ export default {
     };
   },
   methods: {
-    toggleDetail(){
-      if (this.mem_master==0) return;
-      this.showBrcRe=!this.showBrcRe;
+    toggleDetail() {
+      if (this.mem_master == 0) return;
+      this.showBrcRe = !this.showBrcRe;
     },
     formatNum(val) {
       return new Intl.NumberFormat().format(val);
@@ -200,6 +242,24 @@ export default {
     onPageClick(event) {
       this.currentPage = event;
       this.getData(this.currentPage);
+    },
+    formatdate(date) {
+      var dateVisible = new Date(date);
+      var m = "" + (dateVisible.getMonth() + 1);
+      var d = "" + dateVisible.getDate();
+      if (m.length < 2) {
+        m = "0" + m;
+      }
+      if (d.length < 2) {
+        d = "0" + d;
+      }
+      dateVisible = d + "-" + m + "-" + dateVisible.getFullYear();
+      console.log(dateVisible);
+      return dateVisible; //"this.dateVisible";
+    },
+    async triggerSubmit() {
+      await this.fetchBrcReport();
+      await this.fetchuser();
     },
     getData(pageNumber) {
       let responseData = [];
@@ -228,29 +288,55 @@ export default {
       }
       this.data = responseData;
     },
+    setCurDate() {
+      var fuldate = new Date();
+      var m = "" + (fuldate.getMonth() + 1);
+      var d = "" + fuldate.getDate();
+      if (m.length < 2) {
+        m = "0" + m;
+      }
+      if (d.length < 2) {
+        d = "0" + d;
+      }
+      this.r_date = fuldate.getFullYear() + "-" + m + "-" + d;
+    },
     async fetchBrcReport() {
       this.isloading = true;
       this.error = null;
       axios
-        .get(apiDomain.url + "brcreport", { data: null })
+        .get(apiDomain.url + "brcreport", {
+          params: {
+            p_mem_id: this.mem_id,
+            p_master: this.mem_master,
+            p_date: this.r_date,
+          },
+        })
         .then((res) => {
           console.log(res);
-          var results = [];
+          let results = [];
           console.log("====> BEFORE FETCH BRC ORIGIN");
-          for (const i in res.data) {
-            results.push({
-              brc_code: res.data[i].brc_code,
-              com_sale: res.data[i].com_sale,
-              com_win: res.data[i].total,
-              total_com1: res.data[i].total_com1,
-              total_com2: res.data[i].total_com2,
-              totalreturn: res.data[i].totalreturn,
-              win_amount: res.data[i].win_amount,
-              total: res.data[i].total,
-            });
-          }
+          results = res.data.map((el) => {
+            return {
+              brc_code: el["brc_code"],
+              com_sale: el["individual_sale_com_rate"],
+              com_win: el["individual_win_com_rate"],
+              total_com1: el["total_company_sale_com"],
+              total_com2: el["total_individual_win_com"],
+              totalreturn: el["totalreturn"],
+              win_amount: el["all_win_amount"],
+              total: el["all_sale"],
+            };
+          });
 
           this.brcreport = results;
+          console.log(
+            "THIS IS RESULTS: => " +
+              this.brcreport[0]["brc_code"] +
+              " " +
+              this.brcreport[0]["com_sale"] +
+              " " +
+              +this.brcreport[0]["win_amount"]
+          );
           this.branchExtract = this.origin_brc_report;
           console.log("============>" + this.branchExtract[0]["brc_code"]);
 
@@ -268,6 +354,7 @@ export default {
           params: {
             p_mem_id: this.mem_id,
             p_master: this.mem_master,
+            p_date: this.r_date,
           },
         })
         .then((res) => {
@@ -320,6 +407,7 @@ export default {
     },
   },
   async created() {
+    this.setCurDate();
     await this.fetchBrcReport();
     await this.fetchuser();
     console.log("created: ");
@@ -328,13 +416,17 @@ export default {
     console.log("mounted: ");
     this.currentPage = 1;
   },
+  watch: {
+    date(val) {
+      this.setismdate(val);
+      if (val.length > 0) {
+        this.formvalidate.date = true;
+      } else {
+        this.formvalidate.date = false;
+      }
+    },
+  },
   computed: {
-    // brc_total(){
-    //   var total_sale=0;
-    //   var total_com=0;
-    //   var total_win=0;
-
-    // },
     mem_id() {
       return this.$store.getters.user_id;
     },
@@ -355,19 +447,28 @@ export default {
         },
       ];
       if (this.mem_master == 1) {
-        this.brcreport.forEach((i) => {
-          console.log("pppp" + i["brc_code"]);
-          console.log(branch[0]["totalreturn"]);
+        this.brcreport.forEach((el) => {
+          console.log("CONCAT BRANCH CODE: => " + el["brc_code"]);
+          console.log("CONCAT COM SALE: => " + branch[0]["com_sale"]);
+          console.log(
+            "CONCAT INDIVIDUAL SALE COM: => " + el.individual_sale_com_rate
+          );
+          console.log("CONCAT WIN : => " + el.win_amount);
+          console.log(
+            "CONCAT BOTH: => " +
+              branch[0]["com_sale"] +
+              el.individual_sale_com_rate
+          );
           branch = [
             {
-              brc_code: i["brc_code"],
-              com_sale: branch[0]["com_sale"] + i.com_sale,
-              com_win: branch[0]["com_win"] + i.com_win,
-              total_com1: branch[0]["total_com1"] + i.total_com1,
-              total_com2: branch[0]["total_com2"] + i.total_com2,
-              totalreturn: branch[0]["totalreturn"] + i.totalreturn,
-              win_amount: branch[0]["win_amount"] + i.win_amount,
-              total: branch[0]["total"] + i.total,
+              brc_code: el["brc_code"],
+              com_sale: branch[0]["com_sale"] + el.com_sale,
+              com_win: branch[0]["com_win"] + el.com_win,
+              total_com1: branch[0]["total_com1"] + el.total_com1,
+              total_com2: branch[0]["total_com2"] + el.total_com2,
+              totalreturn: branch[0]["totalreturn"] + el.totalreturn,
+              win_amount: branch[0]["win_amount"] + el.win_amount,
+              total: branch[0]["total"] + el.total,
             },
           ];
         });
@@ -382,3 +483,14 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.error {
+  /* border: 1px solid red; */
+  color: red;
+}
+.succeed {
+  /* border: 1px solid green; */
+  color: green;
+}
+</style>

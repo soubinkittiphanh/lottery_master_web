@@ -91,7 +91,6 @@ export default {
   },
   methods: {
     getData() {
-      //   const r_date = "10002";
       this.error = null;
       this.isloading = true;
 

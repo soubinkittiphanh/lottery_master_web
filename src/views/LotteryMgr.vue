@@ -1,5 +1,5 @@
 <template>
-  <div class="container card">
+  <div class="container">
     <form>
       <div class="form-group row">
         <label for="roll_id" class="col-md-4 col-form-label">ງວດທີ:</label>
@@ -13,6 +13,26 @@
           />
           <span v-if="!formvalidate.ref" class="error"
             >ກະລຸນາໃສ່ເລກທີງວດ !!</span
+          >
+        </div>
+        <label for="roll_id" class="col-md-4 col-form-label">ປະເພດເລກ:</label>
+        <div class="col-md-12">
+          <select
+            class="custom-select"
+            aria-label="Default select example"
+            :required="true"
+            v-model="ism_category"
+          >
+            <option
+              v-for="d in categoryList"
+              v-bind:key="d.catId"
+              :value="d.category_id"
+            >
+              {{ d.category_id }} | {{ d.category_name }}
+            </option>
+          </select>
+          <span v-if="!formvalidate.ref" class="error"
+            >ກະລຸນາໃສ່ປະເພດເລກ !!</span
           >
         </div>
         <label for="roll_id" class="col-md-4 col-form-label"
@@ -34,15 +54,99 @@
           >
         </div>
         <label for="roll_id" class="col-md-4 col-form-label"
-          >ຜົນອອກລາງວັນ:</label
+          >ເວລາອອກລາງວັນ:</label
+        >
+        <div class="col-md-12">
+          <div class="row">
+            <div class="col-sm-4">
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon1">hh</span>
+                <select class="custom-select" :required="true" v-model="selHH">
+                  <option
+                    v-for="d in ism_endtime.hour"
+                    v-bind:key="d"
+                    :value="d"
+                  >
+                    {{ d }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon1">mn</span>
+                <select class="custom-select" :required="true" v-model="selMN">
+                  <option v-for="d in ism_endtime.mn" v-bind:key="d" :value="d">
+                    {{ d }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon1">sec</span>
+                <select class="custom-select" :required="true" v-model="selSC">
+                  <option v-for="d in ism_endtime.sc" v-bind:key="d" :value="d">
+                    {{ d }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <label for="roll_id" class="col-md-4 col-form-label"
+          >ຜົນອອກລາງວັນ ບົນ:</label
         >
         <div class="col-md-12">
           <input
             type="number"
             class="form-control"
-            placeholder="ເລກຜົນອອກຕ້ອງໃສ່ 6 ຕົວ"
-            v-model="ism_res"
+            placeholder="[ບົນ] 6 ຕົວ"
+            v-model="ism_res_pr"
           />
+        </div>
+        <label for="roll_id" class="col-md-4 col-form-label"
+          >ຜົນອອກລາງວັນ ລ່າງ:</label
+        >
+        <div class="col-md-12">
+          <input
+            type="number"
+            class="form-control"
+            placeholder="[ລ່າງ] 6 ຕົວ"
+            v-model="ism_res_sec"
+          />
+        </div>
+        <label for="roll_id" class="col-md-4 col-form-label"
+          >ຜົນອອກລາງວັນ ບົນ ສູງ/ຕ່ຳ:</label
+        >
+        <div class="col-md-12">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="ເລກຜົນອອກຕ້ອງໃສ່ o ຫລື u ຕົວ"
+            v-model="ism_res_pr_ou"
+          />
+        </div>
+        <label for="roll_id" class="col-md-4 col-form-label"
+          >ຜົນອອກລາງວັນ ລ່າງ ສູງ/ຕ່ຳ:</label
+        >
+        <div class="col-md-12">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="ເລກຜົນອອກຕ້ອງໃສ່ o ຫລື u ຕົວ"
+            v-model="ism_res_sec_ou"
+          />
+        </div>
+
+        <div class="col-md-12">
+          <label for="exampleFormControlTextarea1">Remark</label>
+          <textarea
+            class="form-control"
+            id="exampleFormControlTextarea1"
+            rows="3"
+            v-model="ism_remark"
+          ></textarea>
         </div>
         <label class="col-md-4 col-form-label">ສະຖານະງວດ</label>
         <div class="col-md-12">
@@ -53,7 +157,8 @@
             {{ isopen ? "ເປີດ" : "ປິດ" }}
           </button>
         </div>
-        <div class="col-md-12"></div>
+
+        <!-- <div class="col-md-12"></div> -->
         <div class="col-md-12 custom-control custom-switch">
           <input
             v-model="isopen"
@@ -86,8 +191,8 @@
     <p v-else-if="!isLoading && error" style="color: red">{{ error }}</p>
     <p v-else-if="ismdata.length < 1">ຍັງບໍ່ມີງວດ</p>
     <base-card v-for="(itm, idx) in ismdata" :key="idx">
-      <span style="color: green"> [ ຜົນອອກ:{{ itm.ism_res }} ]</span>
-      [ ເລກທີ: {{ itm.ism_ref }} ] [ ອອກວັນທີ: {{ formatdate(itm.ism_date) }} ]
+      <span style="color: green"> [ ຜົນອອກ:{{ itm.ism_res_pr }} ]</span>
+      [ປະເພດ: {{itm.ism_category}} ເລກທີ: {{ itm.ism_ref }} ] [ ອອກວັນທີ: {{ formatdate(itm.ism_date) }} {{itm.ism_end_time}}]
       <switch-toggle
         :is-open="itm.ism_active === 1 ? true : false"
         :name="'customSwitch' + itm.ism_id"
@@ -97,11 +202,7 @@
         class="btn btn-warning"
         @click="
           editism(
-            itm.ism_id,
-            itm.ism_ref,
-            itm.ism_date,
-            itm.ism_res,
-            itm.ism_active
+            itm
           )
         "
       >
@@ -126,12 +227,26 @@ export default {
   },
   data() {
     return {
+      selHH: "00",
+      selMN: "00",
+      selSC: "00",
       moment: moment,
       errorclass: "border:1px solid red;",
       ism_ref: "",
+      ism_category: "LA001",
+      categoryList: [],
       date: "",
       dateVisible: "",
-      ism_res: "",
+      ism_res_pr: "",
+      ism_res_sec: "",
+      ism_res_pr_ou: "",
+      ism_res_sec_ou: "",
+      ism_remark: "",
+      ism_endtime: {
+        hour: [],
+        mn: [],
+        sc: [],
+      },
       isopen: false,
       issave: false,
       ismdata: [],
@@ -165,6 +280,50 @@ export default {
     },
   },
   methods: {
+    genTimeComponet() {
+      let tempHH = [];
+      let i = 0;
+      while (i < 24) {
+        if (i > 9) {
+          tempHH.push(`${i}`);
+        } else {
+          tempHH.push(`0${i}`);
+        }
+        i++;
+      }
+      console.log("HH:" + tempHH[0]);
+      this.ism_endtime.hour = tempHH;
+      this.genMn();
+    },
+    genMn() {
+      let tempMn = [];
+      let i = 0;
+      while (i < 60) {
+        if (i > 9) {
+          tempMn.push(`${i}`);
+        } else {
+          tempMn.push(`0${i}`);
+        }
+        i++;
+      }
+      console.log("HH:" + tempMn[0]);
+      this.ism_endtime.mn = tempMn;
+      this.genSec();
+    },
+    genSec() {
+      let tempSc = [];
+      let i = 0;
+      while (i < 60) {
+        if (i > 9) {
+          tempSc.push(`${i}`);
+        } else {
+          tempSc.push(`0${i}`);
+        }
+        i++;
+      }
+      console.log("HH:" + tempSc[0]);
+      this.ism_endtime.sc = tempSc;
+    },
     gen_ism_ref() {
       console.log("Sending");
       this.isLoading = true;
@@ -178,6 +337,20 @@ export default {
         .catch((er) => {
           this.error = er;
         });
+    },
+    async fetchCategory() {
+      let response = await axios.get(apiDomain.url + "category_f");
+      try {
+        let responseData = response.data;
+        for (let index = 0; index < responseData.length; index++) {
+          const element = responseData[index];
+          console.log(element);
+          this.categoryList.push(element);
+        }
+        console.log("Category len: " + response.data.length);
+      } catch (error) {
+        console.log("Error fetching category: " + error);
+      }
     },
     formatdate(date) {
       var dateVisible = new Date(date);
@@ -193,17 +366,22 @@ export default {
       console.log(dateVisible);
       return dateVisible; //"this.dateVisible";
     },
-    editism(ism_id, ism_ref, ism_date, ism_res, ism_active) {
+    editism(itm) {
       var r = confirm("ຕ້ອງການແກ້ໄຂຂໍ້ມູນ?");
       if (r == true) {
-        console.log(
-          ism_ref + "_" + ism_date + "_" + ism_res + "_" + ism_active
-        );
-        this.ismId = ism_id;
-        this.ism_ref = ism_ref;
-        this.ism_res = ism_res;
-        this.setismdate(ism_date);
-        this.isopen = ism_active === 1 ? true : false;
+        this.ismId = itm.ism_id;
+        this.ism_ref = itm.ism_ref;
+        this.ism_res_pr = itm.ism_res_pr;
+        this.ism_res_sec = itm.ism_res_sec;
+        this.ism_res_pr_ou = itm.ism_res_pr_ou;
+        this.ism_res_sec_ou = itm.ism_res_sec_ou;
+        this.ism_remark = itm.ism_remark;
+        this.selHH = itm.ism_end_time.split(":")[0];
+        this.selMN = itm.ism_end_time.split(":")[1];
+        this.selSC = itm.ism_end_time.split(":")[2];
+        this.ism_category=itm.ism_category
+        this.setismdate(itm.ism_date);
+        this.isopen = itm.ism_active === 1 ? true : false;
         this.issave = true;
       } else {
         this.issave = false;
@@ -248,17 +426,24 @@ export default {
       } else {
         !this.formvalidate.ref || !this.formvalidate.date
           ? alert("ຂໍ້ມູນບໍ່ຖືກຕ້ອງ ກວດສອບຂໍ້ມູນໃຫ້ຄົບຖ້ວນ")
-          : this.getdataSurvey("create");
+          : this.createIsm();
       }
     },
     createIsm() {
       this.isLoading = true;
       this.error = null;
+      console.log("ISM OU PR: "+this.ism_res_pr_ou);
       axios
         .post(apiDomain.url + "createism", {
           ism_ref: this.ism_ref,
+          ism_category: this.ism_category,
           ism_date: this.date,
-          ism_res: this.ism_res,
+          ism_res_pr: this.ism_res_pr,
+          ism_res_sec: this.ism_res_sec,
+          ism_res_pr_ou: this.ism_res_pr_ou,
+          ism_res_sec_ou: this.ism_res_sec_ou,
+          ism_remark: this.ism_remark,
+          ism_endtime: this.selHH + ":" + this.selMN + ":" + this.selSC,
           ism_active: this.isopen,
         })
         .then((res) => {
@@ -287,8 +472,14 @@ export default {
       axios
         .put(apiDomain.url + "updateism", {
           ism_ref: this.ism_ref,
+          ism_category: this.ism_category,
           ism_date: this.date,
-          ism_result: this.ism_res,
+          ism_res_pr: this.ism_res_pr,
+          ism_res_sec: this.ism_res_sec,
+          ism_res_pr_ou: this.ism_res_pr_ou,
+          ism_res_sec_ou: this.ism_res_sec_ou,
+          ism_remark: this.ism_remark,
+          ism_endtime: this.selHH + ":" + this.selMN + ":" + this.selSC,
           ism_active: this.isopen,
           ism_id: this.ismId, //this.ismId,
         })
@@ -321,13 +512,13 @@ export default {
               this.createIsm();
             }
           } else {
-            if (res.data.length > 1) {
-              alert("ວັນທີ ເປີດງວດທີ່ເລືອກ ມີງວດທີ່ໃຊ້ງານຢູ່");
-              this.fetchdata();
-            } else {
+            // if (res.data.length > 1) {
+            //   alert("ວັນທີ ເປີດງວດທີ່ເລືອກ ມີງວດທີ່ໃຊ້ງານຢູ່");
+            //   this.fetchdata();
+            // } else {
               // alert("Ready to update");
               this.updateIsm();
-            }
+            // }
           }
           this.isLoading = false;
           console.log(res.data);
@@ -355,11 +546,18 @@ export default {
         .then((res) => {
           const result = [];
           for (const id in res.data) {
+            console.log("endtime: "+res.data[id].end_time);
             result.push({
               ism_id: res.data[id].id,
               ism_ref: res.data[id].ism_ref,
               ism_date: res.data[id].ism_date,
-              ism_res: res.data[id].ism_result,
+              ism_res_pr: res.data[id].ism_result_primary,
+              ism_res_sec: res.data[id].ism_result_secondary,
+              ism_res_pr_ou: res.data[id].ism_result_primary_ou,
+              ism_res_sec_ou: res.data[id].ism_result_secondary_ou,
+              ism_remark: res.data[id].remark,
+              ism_end_time: res.data[id].end_time||"00:00:00",
+              ism_category: res.data[id].cat_id,
               ism_active: res.data[id].ism_active,
             });
           }
@@ -380,9 +578,18 @@ export default {
     },
   },
   mounted() {
+    console.log("mounted =>");
     this.callFunction();
     this.fetchdata();
     this.gen_ism_ref();
+  },
+  async created() {
+    console.log("created =>");
+    this.genTimeComponet();
+    setTimeout(() => {
+      console.log("Time is runing =>");
+    }, 3000);
+    await this.fetchCategory();
   },
 };
 </script>
